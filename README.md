@@ -29,6 +29,7 @@ wget https://raw.githubusercontent.com/iczyaer/Supervisor-for-Alpine-Linux/main/
 wget https://raw.githubusercontent.com/iczyaer/Supervisor-for-Alpine-Linux/main/test_script.sh
 chmod +x supervisor_install.sh test_script.sh
 bash```
+
 ### 2. 准备测试脚本
 将测试脚本移动到 `/usr/local/bin/` 并设置执行权限：
 

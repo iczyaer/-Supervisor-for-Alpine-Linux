@@ -29,4 +29,4 @@
 ```bash
 wget https://raw.githubusercontent.com/iczyaer/-Supervisor-for-Alpine-Linux/main/supervisor_install.sh
 wget https://raw.githubusercontent.com/iczyaer/-Supervisor-for-Alpine-Linux/main/test_script.sh
-chmod +x supervisor_install.sh test_script.sh# -Supervisor-for-Alpine-Linux
+chmod +x supervisor_install.sh test_script.sh

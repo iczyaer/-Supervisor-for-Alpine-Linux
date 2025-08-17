@@ -40,9 +40,6 @@ chmod +x /usr/local/bin/test_script.sh
 ```
 ### 3. 运行安装脚本
 以 root 用户运行脚本：
-```
-
-命令：
 ```bash
 ./supervisor_install.sh
 ```
@@ -56,3 +53,99 @@ chmod +x /usr/local/bin/test_script.sh
 3. 删除程序配置：删除指定的  .ini  配置文件，并自动更新。
 ​
 4. 退出：退出脚本。
+
+### 4. 添加测试配置
+1. 选择菜单选项 2 添加程序配置。
+2. 输入以下参数：
+   - 程序名称：`test_script`
+   - 命令：`/usr/local/bin/test_script.sh`
+   - 工作目录：`/`（默认，按 Enter）
+   - 用户：`root`（默认，按 Enter）
+   - 自动重启：`yes`（默认，按 Enter）
+   - 启动重试次数：`3`（默认，按 Enter）
+   - 环境变量：留空（默认，按 Enter）
+3. 脚本会生成 `/etc/supervisor.d/test_script.ini` 并自动运行 `supervisorctl reread` 和 `supervisorctl update`，输出“配置已应用”。
+
+生成的配置文件示例：
+```ini
+[program:test_script]
+command=/usr/local/bin/test_script.sh
+directory=/
+user=root
+autorestart=true
+startretries=3
+```
+### 5. 验证功能
+- 检查进程状态：
+  命令：`supervisorctl status`
+  预期输出：`test_script RUNNING`
+
+- 查看日志：
+  - Supervisor 主日志：
+    命令：`tail -f /var/log/supervisor/supervisord.log`
+    预期：包含启动信息，无“没有文件”错误。
+  - 测试脚本日志：
+    命令：`tail -f /var/log/test_script.log`
+    预期：每 5 秒输出 `Hello from test script! Time: ...`
+  - 进程输出日志：
+    命令：`tail -f /var/log/supervisor/test_script-stdout---supervisor-*.log`
+    预期：捕获的 stdout 输出
+
+- 测试进程管理：
+  - 停止进程：
+    命令：`supervisorctl stop test_script`
+    预期：状态变为 STOPPED
+  - 启动进程：
+    命令：`supervisorctl start test_script`
+    预期：状态变回 RUNNING
+  - 模拟崩溃：
+    命令：`pkill -f test_script.sh`
+    预期：Supervisor 自动重启，状态仍为 RUNNING
+
+- 测试开机自启动：
+  命令：`reboot`
+  命令：`supervisorctl status`
+  预期：`test_script RUNNING`
+
+- 删除配置：
+  选择菜单选项 3，输入 `test_script`，脚本会删除 `/etc/supervisor.d/test_script.ini` 并自动运行 `supervisorctl reread` 和 `supervisorctl update`，输出“配置已更新”。
+### 6. 测试未运行 Supervisor 的情况
+1. 停止 Supervisor：
+   命令：`/etc/init.d/supervisord stop`
+2. 选择菜单选项 2 添加配置（如 `test_script`）。
+3. 脚本会提示：
+   `Supervisor未运行，请先启动Supervisor（选项1），然后手动运行 'supervisorctl reread' 和 'supervisorctl update'。`
+4. 选择选项 1 启动 Supervisor，再次添加配置，确认自动 `reread` 和 `update` 生效。
+## 文件结构
+- `supervisor_install.sh`：主脚本，包含安装、配置管理和自启动功能。
+- `test_script.sh`：测试脚本，每 5 秒输出消息到日志和 stdout。
+- 生成的文件：
+  - `/etc/supervisord.conf`：主配置文件
+  - `/etc/supervisor.d/*.ini`：程序配置文件
+  - `/var/log/supervisor/supervisord.log`：Supervisor 主日志
+  - `/var/log/supervisor/*.log`：进程日志
+  - `/var/log/test_script.log`：测试脚本日志
+
+## 常见问题
+- 日志文件不存在：
+  - 检查目录权限：
+    命令：`ls -ld /var/log/supervisor`
+    预期：`drwxr-xr-x`
+  - 确保日志文件存在：
+    命令：`ls -l /var/log/supervisor/supervisord.log`
+    预期：`-rw-r--r--`
+- Supervisor 未运行：
+  - 启动服务：
+    命令：`/etc/init.d/supervisord start`
+  - 检查服务状态：
+    命令：`rc-status`
+- 进程未启动：
+  - 验证测试脚本路径和权限：
+    命令：`ls -l /usr/local/bin/test_script.sh`
+  - 检查 Supervisor 日志：
+    命令：`tail /var/log/supervisor/supervisord.log`
+- 自动 `reread`/`update` 失败：
+  - 确认 Supervisor 运行：
+    命令：`ps -p $(cat /var/run/supervisor/supervisord.pid)`
+  - 手动运行：
+    命令：`supervisorctl reread && supervisorctl update`

@@ -36,14 +36,12 @@ bash```
 ```bash
 mv test_script.sh /usr/local/bin/test_script.sh
 chmod +x /usr/local/bin/test_script.sh
-bash```
 ### 3. 运行安装脚本
 以 root 用户运行脚本：
 
 命令：
 ```bash
 ./supervisor_install.sh
-bash```
 脚本提供以下菜单选项：
  
 1. 安装 Supervisor 并启用开机自启动：安装 Supervisor，创建日志文件  /var/log/supervisor/supervisord.log  和主配置文件  /etc/supervisord.conf ，并加入系统服务。
